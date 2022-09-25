@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,10 +10,10 @@ namespace Waypoint
         private MeshRenderer _meshRenderer;
         [SerializeField] private Material defaultMaterial;
 
-        [SerializeField] private Type type;
+        public Types Type { get; private set; }
         [SerializeField] private List<Waypoint> waypoints = new();
 
-        public enum Type
+        public enum Types
         {
             Head,
             Tail,
@@ -24,49 +25,65 @@ namespace Waypoint
             _meshRenderer = gameObject.GetComponent<MeshRenderer>();
         }
 
-        private void OnMouseDown()
+        private void Update()
         {
-            if (type == Type.Tail) return;
-
-            Manager.Instance.SetSelected(this);
-            SetSelectedMaterial();
+            Color color = Manager.Instance.settings.standart.color;
+            foreach (var waypoint in waypoints)
+            {
+                Debug.DrawLine(transform.position, waypoint.transform.position, color);
+            }
         }
 
-        public void SetType(Type waypointType)
+        private void OnMouseDown()
         {
-            type = waypointType switch
+            if (Type == Types.Tail)
             {
-                Type.Head => Type.Head,
-                Type.Tail => Type.Tail,
-                _ => Type.Standart
+                Manager.Instance.AddConnection(this);
+                return;
+            }
+            Manager.Instance.SetSelected(this);
+        }
+
+        public void SetType(Types waypointTypes)
+        {
+            Type = waypointTypes switch
+            {
+                Types.Head => Types.Head,
+                Types.Tail => Types.Tail,
+                _ => Types.Standart
             };
 
-            DefineDefaultMaterial();
+            SetDefaultMaterial();
+        }
+
+        public void AddConnection(Waypoint connection)
+        {
+            waypoints.Add(connection);
         }
 
         #region Define Material
-        private void DefineDefaultMaterial()
+        private void SetDefaultMaterial()
         {
             Settings settings = Manager.Instance.settings;
 
-            defaultMaterial = type switch
+            defaultMaterial = Type switch
             {
-                Type.Head => settings.headGraph,
-                Type.Tail => settings.tailGraph,
+                Types.Head => settings.headGraph,
+                Types.Tail => settings.tailGraph,
                 _ => settings.standart
             };
 
             ResetMaterial();
         }
 
-        public void ResetMaterial()
-        {
-            _meshRenderer.material = defaultMaterial;
-        }
-
         public void SetSelectedMaterial()
         {
             _meshRenderer.material = Manager.Instance.settings.selected;
+        }
+
+        public void ResetMaterial()
+        {
+            _meshRenderer.material = defaultMaterial;
         }
         #endregion
     }

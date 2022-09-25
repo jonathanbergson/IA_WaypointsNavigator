@@ -35,40 +35,53 @@ namespace Waypoint
         {
             if (!Input.GetMouseButtonDown(0)) return;
 
+            RaycastHit hit;
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(ray, out hit, 3000)) return;
 
-            if (Physics.Raycast(ray, out _, 1000) == false)
-                CreateStandardWaypoint(ray.origin.x, ray.origin.y);
+            Waypoint waypoint = CreateStandardWaypoint(ray.origin.x, ray.origin.y);
+            AddConnection(waypoint);
+            SetSelected(waypoint);
         }
 
         private void CreateHeadWaypoint()
         {
             _head = Instantiate(settings.prefab, null);
-            _head.SetType(Waypoint.Type.Head);
-            _head.gameObject.transform.position = new Vector3(-5, -5);
+            _head.SetType(Waypoint.Types.Head);
+            _head.gameObject.transform.position = new Vector3(-12, 6);
+
+            SetSelected(_head);
         }
 
         private void CreateTailWaypoint()
         {
             _tail = Instantiate(settings.prefab, null);
-            _tail.SetType(Waypoint.Type.Tail);
-            _tail.gameObject.transform.position = new Vector3(5, 5);
+            _tail.SetType(Waypoint.Types.Tail);
+            _tail.gameObject.transform.position = new Vector3(12, -6);
         }
 
-        private void CreateStandardWaypoint(float x, float y)
+        private Waypoint CreateStandardWaypoint(float x, float y)
         {
             Waypoint waypoint = Instantiate(settings.prefab, null);
-            waypoint.SetType(Waypoint.Type.Standart);
+            waypoint.SetType(Waypoint.Types.Standart);
             waypoint.gameObject.transform.position = new Vector3(x, y);
 
-            SetSelected(waypoint);
-            waypoint.SetSelectedMaterial();
+            return waypoint;
+        }
+
+        public void AddConnection(Waypoint connection)
+        {
+            if(_selected) _selected.AddConnection(connection);
         }
 
         public void SetSelected(Waypoint selected)
         {
             if(_selected) _selected.ResetMaterial();
+
             _selected = selected;
+
+            if (_selected.Type == Waypoint.Types.Standart)
+                _selected.SetSelectedMaterial();
         }
     }
 }
