@@ -1,6 +1,7 @@
-using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Waypoint
 {
@@ -13,7 +14,17 @@ namespace Waypoint
         public Types Type { get; private set; }
         [SerializeField] public List<Waypoint> waypoints = new();
 
-        public float distance;
+        [SerializeField] private float _distance;
+        public float Distance
+        {
+            get => _distance;
+            set {
+                _distance = value;
+                textUi.text = value.ToString();
+            }
+        }
+
+        public Text textUi;
 
         public enum Types
         {
@@ -61,6 +72,22 @@ namespace Waypoint
         public void AddConnection(Waypoint connection)
         {
             waypoints.Add(connection);
+        }
+
+        public Waypoint GetNextWaypoint()
+        {
+            float distance = float.MaxValue;
+            Waypoint wp = waypoints.First();
+
+            foreach (var waypoint in waypoints)
+            {
+                if (!(waypoint.Distance < distance)) continue;
+
+                distance = waypoint.Distance;
+                wp = waypoint;
+            }
+
+            return wp;
         }
 
         #region Define Material

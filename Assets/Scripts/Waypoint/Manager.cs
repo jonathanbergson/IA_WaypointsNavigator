@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Waypoint
 {
@@ -12,6 +13,10 @@ namespace Waypoint
 
         public Settings settings;
         public static Manager Instance { get; private set; }
+
+        public Transform npc;
+        [SerializeField] private bool _isMoving;
+        [SerializeField] private Waypoint _npcTarget;
 
         private void Awake()
         {
@@ -31,6 +36,8 @@ namespace Waypoint
         {
             // ReSharper disable once Unity.PerformanceCriticalCodeInvocation
             HandleClick();
+            HandleMove();
+            if (_isMoving) HandleMoveNpc();
         }
 
         private void HandleClick()
@@ -44,6 +51,16 @@ namespace Waypoint
             Waypoint waypoint = CreateStandardWaypoint(ray.origin.x, ray.origin.y);
             AddConnection(waypoint);
             SetSelected(waypoint);
+        }
+
+        private void HandleMove()
+        {
+            if (!Input.GetKeyDown(KeyCode.M)) return;
+
+            CalcWeightPath();
+
+            _npcTarget = _head;
+            _isMoving = true;
         }
 
         private void CreateHeadWaypoint()
@@ -86,12 +103,6 @@ namespace Waypoint
                 _selected.SetSelectedMaterial();
         }
 
-        public void CalcPath()
-        {
-            Debug.Log("BOLINHA");
-            CalcWeightPath();
-        }
-
         private void CalcWeightPath()
         {
             Queue<Waypoint> queueWaypoints = new Queue<Waypoint>();
@@ -102,7 +113,7 @@ namespace Waypoint
             {
                 Waypoint wp = queueWaypoints.Dequeue();
                 visitedWaypoints.Add(wp);
-                wp.distance =
+                wp.Distance =
                     Vector3.Distance(wp.transform.position, _tail.transform.position);
 
                 foreach (Waypoint waypoint in wp.waypoints)
@@ -111,6 +122,19 @@ namespace Waypoint
                         queueWaypoints.Enqueue(waypoint);
                 }
             }
+        }
+
+        private void HandleMoveNpc()
+        {
+
+
+            Vector3 direction = _npcTarget.transform.position - npc.position;
+            if (direction.magnitude < 0.1)
+            {
+                _npcTarget = _npcTarget.GetNextWaypoint();
+            }
+
+            npc.transform.position += direction.normalized * 4 * Time.deltaTime;
         }
     }
 }
