@@ -11,7 +11,9 @@ namespace Waypoint
         [SerializeField] private Material defaultMaterial;
 
         public Types Type { get; private set; }
-        [SerializeField] private List<Waypoint> waypoints = new();
+        [SerializeField] public List<Waypoint> waypoints = new();
+
+        public float distance;
 
         public enum Types
         {

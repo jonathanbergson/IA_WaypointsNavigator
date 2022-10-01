@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Waypoint
@@ -82,6 +84,33 @@ namespace Waypoint
 
             if (_selected.Type == Waypoint.Types.Standart)
                 _selected.SetSelectedMaterial();
+        }
+
+        public void CalcPath()
+        {
+            Debug.Log("BOLINHA");
+            CalcWeightPath();
+        }
+
+        private void CalcWeightPath()
+        {
+            Queue<Waypoint> queueWaypoints = new Queue<Waypoint>();
+            List<Waypoint> visitedWaypoints = new List<Waypoint>();
+            queueWaypoints.Enqueue(_head);
+
+            while (queueWaypoints.Count > 0)
+            {
+                Waypoint wp = queueWaypoints.Dequeue();
+                visitedWaypoints.Add(wp);
+                wp.distance =
+                    Vector3.Distance(wp.transform.position, _tail.transform.position);
+
+                foreach (Waypoint waypoint in wp.waypoints)
+                {
+                    if (visitedWaypoints.Contains(waypoint) == false)
+                        queueWaypoints.Enqueue(waypoint);
+                }
+            }
         }
     }
 }
